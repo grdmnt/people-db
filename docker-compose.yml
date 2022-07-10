@@ -1,0 +1,30 @@
+version: "3.9"
+services:
+  db:
+    image: postgres
+    volumes:
+      - ./people-db-api/tmp/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: password
+  api:
+    build: 
+      context: ./people-db-api
+    command: bash -c "rm -f tmp/pids/server.pid && bundle exec rails s -p 3000 -b '0.0.0.0'"
+    volumes: 
+      - ./people-db-api:/myapp
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    tty: true
+    stdin_open: true
+  web:
+    build:
+      context: ./people-db-web
+    volumes:
+      - ./people-db-web:/app
+      - ./people-db-web/node_modules:/app/node_modules
+    ports:
+      - 3001:3000
+    environment:
+      - CHOKIDAR_USEPOLLING=true
